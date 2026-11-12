@@ -4,11 +4,21 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-#g2xuc6if5j*2pfq@$)q2i*)^=5vc_^-o3=%wz7#(2y1w_(eob'
 
-DEBUG = True
+def env_list(name, default=''):
+    return [v.strip() for v in os.environ.get(name, default).split(',') if v.strip()]
 
-ALLOWED_HOSTS = []
+
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'dev-only-key-not-for-production'
+    else:
+        raise RuntimeError('SECRET_KEY environment variable is required when DEBUG is False')
+
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -88,6 +98,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -95,9 +106,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'accounts.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -117,4 +130,4 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
-FRONTEND_URL = 'http://localhost:3000'
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
