@@ -1,0 +1,4 @@
+---
+deployment:
+  tasks:
+    - /bin/cp -R barbers /home/comfesah/YOUR_APP_FOLDER/
