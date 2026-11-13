@@ -9,7 +9,7 @@ from accounts.models import Attendance
 from services.views import IsAdmin
 
 from .models import Barber
-from .serializers import BarberCreateSerializer, BarberSerializer
+from .serializers import BarberSerializer
 
 
 class IsBarber(BasePermission):
@@ -58,14 +58,3 @@ class AdminTeamView(APIView):
                 }
             )
         return Response(data)
-
-
-class AdminBarberCreateView(generics.CreateAPIView):
-    serializer_class = BarberCreateSerializer
-    permission_classes = [IsAdmin]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        barber = serializer.save()
-        return Response(BarberSerializer(barber).data, status=201)
